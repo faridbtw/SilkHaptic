@@ -20,7 +20,7 @@ source = DIST / 'Source'
 source.mkdir(exist_ok=True)
 for name in SOURCE_FILES:
     shutil.copy2(ROOT / name, source / name)
-for name in ['src', 'ThirdParty']:
+for name in ['src', 'ThirdParty', 'assets', 'docs']:
     shutil.copytree(ROOT / name, source / name, dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns('bin', 'obj', '*.log', '.DS_Store'))
 (source / 'tools').mkdir(exist_ok=True)

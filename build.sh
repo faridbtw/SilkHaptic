@@ -30,6 +30,7 @@ cp LICENSE dist/LICENSE
 cp README.md dist/README.md
 cp PROTOCOL.md dist/PROTOCOL.md
 cp VALIDATION.txt dist/VALIDATION.txt
+cp -R assets docs dist/
 mkdir -p dist/ThirdParty
 cp ThirdParty/* dist/ThirdParty/
 cp Install.command Uninstall.command 'Test Haptics.command' 'Test Bluetooth Haptics.command' 'Launch Modded Silksong.command' dist/

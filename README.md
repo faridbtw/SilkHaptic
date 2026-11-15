@@ -1,115 +1,116 @@
-# SilkHaptic
+<p align="center">
+  <img src="assets/silkhaptic-banner.svg" alt="SilkHaptic — Feel every thread. USB-C and Bluetooth haptics for Silksong on macOS." width="100%">
+</p>
 
-macOS port of **Silk-Soft Touch / Silksong PS5 Haptics**, based on the MIT-licensed
-[countlessbats source preserved by alexkiri](https://github.com/alexkiri/SilksongHaptics)
-(commit `5312eab`). A BepInEx 5 plugin mixes Silksong's authored PS5 waveforms;
-a native CoreAudio/IOKit companion sends them to the DualSense's actuators
-over USB or Bluetooth. No Windows software, DSX, or Wine is required by this port.
+<p align="center">
+  <strong>Feel Hornet’s footsteps, dashes, and landings through your PS5 controller.</strong><br>
+  Silksong’s PS5 haptic effects, brought to your Mac.
+</p>
 
-[Download the latest macOS release](https://github.com/faridbtw/SilkHaptic/releases/latest).
+<p align="center">
+  <a href="https://github.com/faridbtw/SilkHaptic/releases/latest"><strong>Download for macOS</strong></a>
+  &nbsp; · &nbsp;
+  <a href="#get-started">Get started</a>
+  &nbsp; · &nbsp;
+  <a href="#need-a-hand">Get help</a>
+</p>
 
-## Install
+---
 
-1. Have a working **BepInEx 5** installation for the macOS version of Silksong.
-2. Connect a **DualSense or DualSense Edge** by USB, or pair it in macOS Bluetooth settings, and quit Silksong.
-3. Download and extract the release ZIP, then open `Install.command` in that folder. It extracts the 314 waveforms
-   from your own macOS game installation and installs the plugin.
-4. Launch the game with BepInEx. `Launch Modded Silksong.command` uses your
-   existing BepInEx launcher and selects Rosetta if your installed Doorstop is
-   Intel-only. Native arm64 Doorstop installations use arm64.
+SilkHaptic uses the haptic effects already included in your copy of **Hollow Knight: Silksong**. Instead of feeling the same basic buzz for everything, you can feel the different textures of movement and action through a DualSense controller.
 
-The internal plugin folder remains `SilkSoftMac` for compatibility with the initial port.
+| Plug in | Go wireless | Launch and play |
+| :--- | :--- | :--- |
+| Connect your controller with a USB-C data cable. | Pair it with your Mac over Bluetooth. | The haptic companion starts and closes with the game. |
 
-The installer defaults to:
-`~/Library/Application Support/Steam/steamapps/common/Hollow Knight Silksong`.
-For a different installation, run `./Install.command "/path/to/game folder"`
-and pass the same path to the launcher/uninstaller, or set `SILKSONG_GAME_DIR`.
-The release includes self-contained Apple Silicon and Intel extractors; you
-need no .NET installation to install it. macOS 12+ is required by the extractor.
-The native bridge is universal arm64/x86_64. Intel hardware has not been tested.
-BepInEx itself is not bundled or replaced.
+## What you need
 
-USB is preferred automatically while its audio endpoint is available. Without
-USB, the bridge streams haptic packets directly to the Bluetooth controller.
-To pair: hold Create + PS until the light flashes, then connect the controller
-in System Settings → Bluetooth. No driver or administrator access is needed.
+- **Hollow Knight: Silksong for macOS.**
+- **BepInEx 5, already installed and working.** This is the mod loader that lets the game run SilkHaptic.
+- **A DualSense controller**, connected by USB or Bluetooth.
+- **macOS 12 or newer.**
 
-Keep normal game audio on your speakers/headphones. The bridge opens the
-controller directly and leaves the system default output unchanged. Over USB,
-it writes silence to channels 1/2 and haptics to channels 3/4. Over Bluetooth,
-it low-pass filters and resamples the authored waveforms from 48 kHz to the
-controller's 3 kHz signed 8-bit stereo haptic format. Bluetooth may have more
-latency and less detail than USB; it still plays the authored waveform. The bridge sends no wireless audio
-packets during idle silence, leaving bandwidth for the game's controller traffic.
-See PROTOCOL.md for the transport details.
+Tested in gameplay on an Apple Silicon Mac with a standard DualSense, using both connections. Intel builds and DualSense Edge support are included, but haven’t been tested on those devices.
 
-`Test Haptics.command` sends a one-second left-then-right actuator test. Run it
-with Silksong closed so the game's bridge does not already hold the port lock.
-`Test Bluetooth Haptics.command` explicitly tests the wireless transport.
-Keep the USB cable unplugged for a meaningful wireless test. Do not run a
-standalone Bluetooth test while the game bridge is already streaming wirelessly.
-You can also run the bridge with `--list` to list audio outputs.
+## Get started
 
-## Settings and logs
+### 1. Download and install
 
-The first game launch creates:
-`BepInEx/config/com.will.silksong.ps5haptics.cfg`.
+Download **[SilkHaptic-macOS-v1.0.zip](https://github.com/faridbtw/SilkHaptic/releases/download/v1.0/SilkHaptic-macOS-v1.0.zip)** from the release page and unzip it.
 
-- `MasterGain`: 0–2; default 1. Haptic intensity.
-- `KeepRumble`: false by default. Enable only if you want ordinary rumble too.
-- `AutoStartBridge`: true by default.
-- `BridgePort`: localhost TCP port; default 48111.
-- `ClipsPath`: optional override for the extracted WAV directory.
+Quit Silksong, then double-click **`Install.command`** inside the extracted folder. The installer finds the usual Steam installation and prepares the haptic effects from your own game files.
 
-The game's vibration settings still apply. Events without a matching waveform
-and events while the bridge is disconnected use the game's original rumble.
-USB removal switches to Bluetooth if a paired controller is available; otherwise
-the connection closes and normal game rumble remains. Reconnecting USB switches
-back to its full-rate audio output.
-The bridge uses a bounded queue, retains the newest samples during wireless
-stalls, and closes with the game.
+> Choose the **SilkHaptic macOS ZIP** under the release’s Assets section. GitHub’s “Source code” downloads are for building the project yourself.
 
-Game log: `BepInEx/LogOutput.log`. Look for `Connected to HapticsBridge` and
-`Haptic play:`. Bridge log:
-`BepInEx/plugins/SilkSoftMac/HapticsBridge/HapticsBridge.log`.
+### 2. Connect your controller
 
-If the device appears but you feel nothing, quit controller utility apps or try
-disabling Steam Input for Silksong; another program may reset the HID audio mode.
-If Bluetooth is absent, confirm the pad is connected in macOS settings, not
-just paired or connected to another device. Steam Controller output is not
-implemented in this macOS port.
+| USB-C | Bluetooth |
+| :--- | :--- |
+| Plug the controller into your Mac using a **data cable**. | Hold **Create + PS** until the light flashes. Open **System Settings → Bluetooth** and connect **DualSense Wireless Controller**. |
+| Gives you the most consistent timing and full waveform detail. | Lets you play without a cable. Timing and detail can differ from USB. |
 
-## Remove or update
+**Switch whenever you like.** USB takes priority when plugged in. Unplug it, and SilkHaptic uses Bluetooth if the controller is connected wirelessly.
 
-Quit Silksong, then open `Uninstall.command`. It moves this port's folder into
-`BepInEx/SilkSoftMac-backups`, outside the plugin scan path, so removal is
-reversible. Other mods and saves are untouched. Installing over an existing
-SilkHaptic installation similarly preserves the old folder there.
+### 3. Play
 
-## Build
+Open **`Launch Modded Silksong.command`** from the extracted folder, or launch through Steam **if you’ve already configured Steam to load BepInEx**.
 
-Requires Xcode command line tools, Mono (`csc`), and .NET 8 SDK. Run:
+That’s it. The haptic companion opens automatically. Keep your usual speakers or headphones selected for game audio.
 
-```sh
-DOTNET=/path/to/dotnet ./build.sh "/path/to/Silksong"
-```
+## Everyday questions
 
-Without `DOTNET`, the build uses `dotnet` on PATH, then `tools/dotnet/dotnet`. The build references
-the user's local game/BepInEx assemblies; they are not redistributed. The
-installer's extraction runs locally, and the release ZIP contains no game clips.
-After building, run `python3 tools/package_release.py` to create the installable ZIP
-and its SHA-256 checksum under `releases/`.
+**Do I have to open another app every time?**
 
-`python3 tools/verify_bridge.py` tests fragmented network delivery and actual
-output consumption on a connected USB or Bluetooth DualSense.
-`python3 tools/verify_bluetooth.py` checks packet structure, CRC against Python
-zlib, sequence/counter wrap, stereo isolation, resampling, and alias rejection. The bridge's `--self-test`
-checks actuator channel mapping, silence on speaker channels, limiting,
-nonfinite input, and underrun silence without a controller.
+No. Once the game launches with BepInEx, SilkHaptic starts its companion automatically and closes it when you quit.
 
-## License
+**Will the normal Steam Play button work?**
 
-MIT; see LICENSE. Upstream copyright: countlessbats and contributors, 2026.
-The macOS backend, independent Bluetooth encoder/resampler, and packaging
-are maintained as SilkHaptic by [faridbtw](https://github.com/faridbtw). Protocol references are recorded in PROTOCOL.md. Team Cherry owns
-Silksong and its haptic assets. DualSense is a Sony trademark.
+Yes, if your Steam launch options already enable BepInEx. Otherwise, use the included `Launch Modded Silksong.command`.
+
+**Do I need DSX, Wine, or a Bluetooth driver?**
+
+No. Both connection methods work directly on macOS.
+
+**Can I change the intensity?**
+
+Yes. After your first launch, quit the game and open `BepInEx/config/com.will.silksong.ps5haptics.cfg` in your game folder. Change `MasterGain`: `0.5` is gentler, `1.0` is the default, and `2.0` is stronger. The game’s own vibration settings still apply.
+
+**What happens to ordinary rumble?**
+
+Effects without a matching PS5 waveform use the game’s normal rumble. Normal rumble is also used while the companion is disconnected.
+
+## Need a hand?
+
+| What’s happening? | What to try |
+| :--- | :--- |
+| Nothing vibrates. | Check that BepInEx loads, vibration is enabled in the game, and the controller is connected. |
+| Bluetooth doesn’t work. | Unplug USB and check that macOS Bluetooth says **Connected**, rather than just listing the paired controller. |
+| Wireless effects feel delayed or uneven. | Try USB to compare. Close other controller utilities; they can compete for the same connection. |
+| The controller connects, but haptics stay silent. | Try disabling Steam Input for Silksong, then launch again. |
+| The installer can’t find my game. | Follow the [custom installation instructions](docs/ADVANCED.md#installing-somewhere-else). |
+
+To check the controller on its own, quit the game and run **`Test Haptics.command`**. You should feel the left grip, then the right. For a wireless check, unplug USB and run **`Test Bluetooth Haptics.command`**.
+
+Still stuck? **[Open an issue](https://github.com/faridbtw/SilkHaptic/issues/new)** and include your macOS version, controller model, connection type, and [the logs](docs/ADVANCED.md#finding-the-logs).
+
+## Update or remove
+
+**Update:** quit the game, extract the new release, and run `Install.command` again. Your previous SilkHaptic installation is backed up automatically.
+
+**Remove:** quit the game and run `Uninstall.command`. It moves SilkHaptic out of the active mods folder. Your saves and other mods are left in place.
+
+## For the curious
+
+- [Advanced settings, custom game folders, and building from source](docs/ADVANCED.md)
+- [How the Bluetooth transport works](PROTOCOL.md)
+- [What’s been tested](VALIDATION.txt)
+
+SilkHaptic prepares all **314 haptic clips** from your own game installation. No Team Cherry game assets are included in this download.
+
+## Credits
+
+Based on **countlessbats’ Silk-Soft Touch / Silksong PS5 Haptics**, using the [MIT-licensed source preserved by alexkiri](https://github.com/alexkiri/SilksongHaptics) at commit `5312eab`. The macOS port and Bluetooth backend are maintained by [faridbtw](https://github.com/faridbtw).
+
+[MIT license](LICENSE) · [Third-party notices](ThirdParty)
+
+Silksong and its game assets belong to Team Cherry. DualSense is a Sony trademark. SilkHaptic is a community project.
