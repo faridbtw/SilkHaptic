@@ -57,3 +57,6 @@ Hollow Knight support (v1.1, 2026-11-15)
 - The installer rejects changes while the selected game is running.
 - Bluetooth packet/CRC/filter tests and both architecture routing self-tests
   pass. Physical Intel Macs and DualSense Edge remain untested.
+- Final live switch test: Bluetooth -> USB -> Bluetooth reconnected without
+  restarting Hollow Knight; nonzero wireless output resumed and the user
+  confirmed haptics returned after switching.
