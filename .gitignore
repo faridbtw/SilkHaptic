@@ -1,0 +1,12 @@
+dist/
+releases/
+local-clips/
+reference/
+upstream/
+tools/dotnet/
+*.zip
+*.zip.sha256
+*.log
+.DS_Store
+**/bin/
+**/obj/

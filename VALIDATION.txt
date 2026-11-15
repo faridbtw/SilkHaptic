@@ -1,0 +1,37 @@
+Validation on this Mac (2026-11-15)
+
+- USB DualSense exposed four 48 kHz output channels.
+- User confirmed left/right actuator test and gameplay haptics work.
+- Extracted and validated all 314 clips: 279 stereo, 35 mono; 48 kHz PCM16.
+- BepInEx 5 loaded the plugin and automatically launched the macOS bridge.
+- Game log confirmed authored hero_dash_vibration, footstep_vibration,
+  and edge_grab_single_vibration events.
+- Fragmented TCP test delivered 28,800 frames; CoreAudio rendered all 28,800.
+- Routing self-test passed on arm64 and on x86_64 under Rosetta.
+- Native bridge compiled with -Wall -Wextra -Werror and passed signature verification.
+- Gameplay connection remained stable after the socket fix.
+
+Scope: USB DualSense verified on Apple Silicon. Intel bridge self-test passed
+under Rosetta; physical Intel Macs and DualSense Edge have not been tested.
+Requires an existing working BepInEx 5 setup. Bluetooth validation is below.
+
+Bluetooth update (0.5.0, 2026-11-15)
+
+- User paired the same DualSense over Bluetooth with USB unplugged.
+- User confirmed independent left/right Bluetooth actuator tests work.
+- User confirmed Bluetooth gameplay haptics work, and resumed after bridge refresh.
+- Existing game reconnected to the updated native bridge without restarting.
+- Live log confirms nonzero waveform samples sent over Bluetooth HID.
+- Protocol tests passed: independent zlib CRC; first/subsequent report layout;
+  four-bit sequence wrap; session counter wrap; stereo separation; sample count;
+  high-frequency alias rejection; resampling across fragmented input.
+- Final Bluetooth network test delivered and consumed all 28,800 frames, with
+  zero queue drops and no disconnect during transmission.
+- Physical wireless radio writes sometimes stalled (up to ~87 ms measured).
+  The final backend reduces control traffic and keeps recent queued samples
+  instead of discarding the entire queue. The final sender transmits no idle
+  silence packets, reducing contention with game controller traffic. Wireless timing remains subject to
+  radio interference, other controller writers, and macOS scheduling.
+- The bridge automatically prefers USB while its audio output is available,
+  otherwise uses Bluetooth; no system driver or administrator helper is needed.
+- No physical Intel Mac or DualSense Edge was available for validation.
