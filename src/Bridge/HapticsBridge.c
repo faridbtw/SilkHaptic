@@ -184,6 +184,15 @@ static void ensureHidManager(void) {
     IOHIDManagerScheduleWithRunLoop(hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     IOHIDManagerOpen(hidManager, kIOHIDOptionsTypeNone);
 }
+static void resetHidManager(void) {
+    /* A manager opened while USB was attached can retain a stale device set
+     * after macOS replaces that service with its Bluetooth HID service. Renew
+     * discovery only while no Bluetooth writer owns a device. */
+    if (!hidManager) return;
+    IOHIDManagerUnscheduleFromRunLoop(hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    IOHIDManagerClose(hidManager, kIOHIDOptionsTypeNone);
+    CFRelease(hidManager); hidManager = NULL;
+}
 static void enableHaptics(void) {
     ensureHidManager();
     CFSetRef devices = IOHIDManagerCopyDevices(hidManager); if (!devices) return;
@@ -348,12 +357,22 @@ static void closeBluetooth(void) {
 static void refreshOutput(void) {
     AudioDeviceID usb = strcmp(transportPreference, "bluetooth") == 0 ? 0 : findDevice(0);
     if (usb) {
-        if (usb != currentDevice || bluetoothDevice) { closeAudio(); enableHaptics(); openAudio(usb); }
+        if (usb != currentDevice || bluetoothDevice) {
+            closeAudio(); resetHidManager(); enableHaptics(); openAudio(usb);
+        }
         return;
     }
-    if (currentDevice) closeAudio();
+    if (currentDevice) {
+        closeAudio(); logline("USB output removed; looking for Bluetooth.");
+    }
+    if (!bluetoothDevice) resetHidManager();
     IOHIDDeviceRef bt = strcmp(transportPreference, "usb") == 0 ? NULL : findBluetooth(0);
-    if (bluetoothDevice && (!bt || !CFEqual(bt, bluetoothDevice) || atomic_load(&bluetoothFailed))) closeBluetooth();
+    if (bluetoothDevice && (!bt || !CFEqual(bt, bluetoothDevice) || atomic_load(&bluetoothFailed))) {
+        closeBluetooth();
+        if (bt) CFRelease(bt);
+        resetHidManager();
+        bt = strcmp(transportPreference, "usb") == 0 ? NULL : findBluetooth(0);
+    }
     if (bt) { if (!bluetoothDevice) openBluetooth(bt); CFRelease(bt); }
 }
 static void *server(void *unused) {

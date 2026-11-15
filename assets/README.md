@@ -1,6 +1,6 @@
 # Banner assets
 
-`silkhaptic-banner.svg` contains the editable red banner layout. The README displays `silkhaptic-white-dualsense-banner.png` for consistent rendering on GitHub.
+`silkhaptic-banner.svg` contains the editable red banner layout. The README displays `silkhaptic-hollow-knight-silksong-banner.png` for consistent rendering on GitHub.
 
 `dualsense-white.png` is Sony’s official **white DualSense** product artwork, used with its supplied transparent background. Source: [PlayStation DualSense product page](https://www.playstation.com/en-us/accessories/dualsense-wireless-controller/).
 

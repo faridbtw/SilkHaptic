@@ -9,10 +9,14 @@ ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / 'dist'
 SOURCE_FILES = ['README.md', 'LICENSE', 'PROTOCOL.md', 'VALIDATION.txt', 'build.sh',
                 'Install.command', 'Uninstall.command', 'Test Haptics.command',
-                'Test Bluetooth Haptics.command', 'Launch Modded Silksong.command', '.gitignore']
+                'Test Bluetooth Haptics.command', 'Launch Modded Silksong.command',
+                'Install Hollow Knight.command', 'Uninstall Hollow Knight.command',
+                'Launch Modded Hollow Knight.command', '.gitignore']
 REQUIRED = ['BepInEx/plugins/SilkSoftMac/SilksongPS5Haptics.dll',
             'BepInEx/plugins/SilkSoftMac/HapticsBridge/HapticsBridge',
-            'Extractor/osx-arm64/Extractor', 'Extractor/osx-x64/Extractor']
+            'Extractor/osx-arm64/Extractor', 'Extractor/osx-x64/Extractor',
+            'HollowKnight/BepInEx/plugins/SilkHaptic/HollowKnightHaptics.dll',
+            'HollowKnight/BepInEx/plugins/SilkHaptic/HapticsBridge/HapticsBridge']
 for name in REQUIRED:
     if not (DIST / name).is_file():
         raise SystemExit(f'Missing {name}; run ./build.sh first.')
@@ -30,11 +34,11 @@ files = sorted(p for p in DIST.rglob('*') if p.is_file())
 for file in files:
     if file.suffix.lower() in {'.wav', '.bundle', '.log', '.pdb'} or file.name == '.DS_Store':
         raise SystemExit(f'Refusing to package local asset or log: {file}')
-    if file.suffix.lower() == '.dll' and file.name != 'SilksongPS5Haptics.dll':
+    if file.suffix.lower() == '.dll' and file.name not in {'SilksongPS5Haptics.dll', 'HollowKnightHaptics.dll'}:
         raise SystemExit(f'Unexpected assembly: {file}')
 releases = ROOT / 'releases'
 releases.mkdir(exist_ok=True)
-archive = releases / 'SilkHaptic-macOS-v1.0.zip'
+archive = releases / 'SilkHaptic-macOS-v1.1.zip'
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as z:
     for file in files:
         z.write(file, Path('SilkHaptic-macOS') / file.relative_to(DIST))

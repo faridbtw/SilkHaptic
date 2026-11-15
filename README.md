@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/silkhaptic-white-dualsense-banner.png" alt="SilkHaptic — Feel every thread. White DualSense controller, USB-C and Bluetooth haptics for macOS." width="100%">
+  <img src="assets/silkhaptic-hollow-knight-silksong-banner.png" alt="SilkHaptic — Feel every thread. White DualSense controller, USB-C and Bluetooth haptics for Hollow Knight and Silksong on macOS." width="100%">
 </p>
 
-SilkHaptic uses the haptic effects already included in your copy of **Hollow Knight: Silksong**. Instead of feeling the same basic buzz for everything, you can feel the different textures of movement and action through a DualSense controller.
+SilkHaptic uses the haptic effects already included in your copy of **Hollow Knight** and **Hollow Knight: Silksong**. Instead of feeling the same basic buzz for everything, you can feel the different textures of movement and action through a DualSense controller.
 
 | Plug in | Go wireless | Launch and play |
 | :--- | :--- | :--- |
@@ -10,7 +10,7 @@ SilkHaptic uses the haptic effects already included in your copy of **Hollow Kni
 
 ## What you need
 
-- **Hollow Knight: Silksong for macOS.**
+- **Hollow Knight or Hollow Knight: Silksong for macOS.** Original Hollow Knight needs the updated Unity 6 build; older builds such as 1.5.78 aren’t supported.
 - **BepInEx 5, already installed and working.** This is the mod loader that lets the game run SilkHaptic.
 - **A DualSense controller**, connected by USB or Bluetooth.
 - **macOS 12 or newer.**
@@ -21,9 +21,16 @@ Tested in gameplay on an Apple Silicon Mac with a standard DualSense, using both
 
 ### 1. Download and install
 
-Download **[SilkHaptic-macOS-v1.0.zip](https://github.com/faridbtw/SilkHaptic/releases/download/v1.0/SilkHaptic-macOS-v1.0.zip)** from the release page and unzip it.
+Download **[SilkHaptic-macOS-v1.1.zip](https://github.com/faridbtw/SilkHaptic/releases/download/v1.1/SilkHaptic-macOS-v1.1.zip)** from the release page and unzip it.
 
-Quit Silksong, then double-click **`Install.command`** inside the extracted folder. The installer finds the usual Steam installation and prepares the haptic effects from your own game files.
+Quit the game, then choose its installer inside the extracted folder:
+
+| Game | Install | Launch |
+| :--- | :--- | :--- |
+| Hollow Knight | `Install Hollow Knight.command` | `Launch Modded Hollow Knight.command` |
+| Hollow Knight: Silksong | `Install.command` | `Launch Modded Silksong.command` |
+
+The installer finds the usual Steam installation and prepares that game’s haptic effects from your own game files. Both games use the same download.
 
 > Choose the **SilkHaptic macOS ZIP** under the release’s Assets section. GitHub’s “Source code” downloads are for building the project yourself.
 
@@ -38,12 +45,12 @@ Quit Silksong, then double-click **`Install.command`** inside the extracted fold
 
 ### 3. Play
 
-Open **`Launch Modded Silksong.command`** from the extracted folder, or launch through Steam **if you’ve already configured Steam to load BepInEx**.
+Open the launch command for your game from the table above, or launch through Steam **if you’ve already configured Steam to load BepInEx**. The Hollow Knight launcher uses Rosetta on Apple Silicon for BepInEx 5 compatibility; keep Steam running.
 
 That’s it. The haptic companion opens automatically. Keep your usual speakers or headphones selected for game audio.
 
 ## Update or remove
 
-**Update:** quit the game, extract the new release, and run `Install.command` again. Your previous SilkHaptic installation is backed up automatically.
+**Update:** quit the game, extract the new release, and run its installer again. Your previous SilkHaptic installation is backed up automatically.
 
-**Remove:** quit the game and run `Uninstall.command`. It moves SilkHaptic out of the active mods folder. Your saves and other mods are left in place.
+**Remove:** quit the game and run `Uninstall Hollow Knight.command` for Hollow Knight, or `Uninstall.command` for Silksong. Your saves and other mods are left in place.

@@ -8,7 +8,21 @@ using UnityEngine;
 
 namespace SilksongPS5Haptics
 {
-    [BepInPlugin("com.will.silksong.ps5haptics", "SilkHaptic", "1.0.0")]
+    internal static class GameSupport
+    {
+        public const string Version = "1.1.0";
+#if HOLLOW_KNIGHT
+        public const string Id = "com.faridbtw.hollowknight.haptics";
+        public const string Name = "SilkHaptic (Hollow Knight)";
+        public const int Port = 48112;
+#else
+        public const string Id = "com.will.silksong.ps5haptics";
+        public const string Name = "SilkHaptic";
+        public const int Port = 48111;
+#endif
+    }
+
+    [BepInPlugin(GameSupport.Id, GameSupport.Name, GameSupport.Version)]
     public class PS5HapticsPlugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
@@ -26,7 +40,7 @@ namespace SilksongPS5Haptics
                 "Also send the normal dual-motor rumble while a PS5 haptic clip plays (may feel doubled).");
             MasterGain = Config.Bind("General", "MasterGain", 1.0f,
                 new ConfigDescription("Overall haptic intensity.", new AcceptableValueRange<float>(0f, 2f)));
-            BridgePort = Config.Bind("General", "BridgePort", 48111,
+            BridgePort = Config.Bind("General", "BridgePort", GameSupport.Port,
                 new ConfigDescription("Localhost bridge port.", new AcceptableValueRange<int>(1024, 65535)));
             ClipsPath = Config.Bind("General", "ClipsPath", "",
                 "Folder containing the extracted PS5 haptic WAVs. Empty = <plugin folder>/clips.");
@@ -42,7 +56,7 @@ namespace SilksongPS5Haptics
                 TryStartBridge();
 
             HapticEngine.Start(clips, BridgePort.Value);
-            new Harmony("com.will.silksong.ps5haptics").PatchAll(typeof(MixerPatch));
+            new Harmony(GameSupport.Id).PatchAll(typeof(MixerPatch));
             Log.LogInfo($"PS5 haptics plugin loaded. Clips: {clips}");
         }
 
@@ -79,7 +93,6 @@ namespace SilksongPS5Haptics
             _nextBridgeCheck = Time.unscaledTime + 10f;
             if (_bridgeRelaunches >= 5) return;
             if (bridgeProcess != null && !bridgeProcess.HasExited) return;
-            if (System.Diagnostics.Process.GetProcessesByName("HapticsBridge").Length > 0) return;   // someone else's is alive
 
             _bridgeRelaunches++;
             Log.LogWarning($"Bridge unreachable and no HapticsBridge process found — relaunching (attempt {_bridgeRelaunches}/5).");

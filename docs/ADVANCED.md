@@ -2,6 +2,8 @@
 
 [← Back to SilkHaptic](../README.md)
 
+SilkHaptic supports the updated macOS Hollow Knight build and Hollow Knight: Silksong.
+
 Most players only need the [quick setup](../README.md#get-started). This page covers other install locations, configuration, troubleshooting details, and building the project.
 
 ## Installing somewhere else
@@ -27,6 +29,18 @@ Use the folder containing **Hollow Knight Silksong.app**, not the app itself. Pa
 
 You can also set `SILKSONG_GAME_DIR` in your shell environment. BepInEx 5 must already be installed in the selected game folder.
 
+For original Hollow Knight, the default folder is `~/Library/Application Support/Steam/steamapps/common/Hollow Knight`. To use another location:
+
+```sh
+./"Install Hollow Knight.command" "/path/to/Hollow Knight"
+./"Launch Modded Hollow Knight.command" "/path/to/Hollow Knight"
+./"Uninstall Hollow Knight.command" "/path/to/Hollow Knight"
+```
+
+Use the folder containing `hollow_knight.app`. `HOLLOW_KNIGHT_GAME_DIR` overrides its default location. The updated Unity 6 version is required; the extractor rejects older builds without the PS5 clips.
+
+The included Hollow Knight launcher uses Rosetta on Apple Silicon with BepInEx 5 and passes Steam’s app identity for direct launches. Keep Steam running.
+
 ## Settings
 
 The first game launch creates this file inside your game folder:
@@ -45,6 +59,8 @@ BepInEx/config/com.will.silksong.ps5haptics.cfg
 
 The in-game vibration settings are respected. Keep game audio on your usual speakers or headphones; you don’t need to select the controller as the system audio output.
 
+For Hollow Knight, the config is `BepInEx/config/com.faridbtw.hollowknight.haptics.cfg`; its default bridge port is `48112`. Silksong uses its existing config and port `48111`.
+
 ## Finding the logs
 
 Look inside your Silksong folder:
@@ -56,7 +72,9 @@ Look inside your Silksong folder:
 
 `Connected to HapticsBridge` means the game has reached its companion. `Haptic play:` confirms that a game event selected a PS5 waveform. The companion log identifies USB or Bluetooth output and records connection errors.
 
-The internal folder is still called `SilkSoftMac` for compatibility with the first version of this port. The project’s public name is **SilkHaptic**.
+Hollow Knight’s companion log is `BepInEx/plugins/SilkHaptic/HapticsBridge/HapticsBridge.log`.
+
+The Silksong internal folder is still called `SilkSoftMac` for compatibility with the first version of this port. The project’s public name is **SilkHaptic**.
 
 ## Connection details
 
@@ -76,6 +94,8 @@ Installing an update or running the uninstaller moves the previous plugin folder
 BepInEx/SilkSoftMac-backups/
 ```
 
+Hollow Knight uses `BepInEx/SilkHaptic-backups/`.
+
 This is outside the active plugins folder. Configuration, saves, and other mods are preserved.
 
 ## Build from source
@@ -92,6 +112,14 @@ If .NET isn’t on your PATH, specify it:
 ```sh
 DOTNET=/path/to/dotnet ./build.sh "/path/to/Hollow Knight Silksong"
 ```
+
+To build both game plugins, pass both installation folders, or keep Hollow Knight in its default Steam location:
+
+```sh
+./build.sh "/path/to/Hollow Knight Silksong" "/path/to/Hollow Knight"
+```
+
+The packager expects both compiled plugins for the combined release.
 
 The build also checks `tools/dotnet/dotnet` as a fallback. Compiled files go into `dist/`; the installable ZIP and SHA-256 checksum go into `releases/`. The release includes self-contained extractors for Apple Silicon and Intel, so players do not need .NET installed.
 

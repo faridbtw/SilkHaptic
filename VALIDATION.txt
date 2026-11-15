@@ -35,3 +35,25 @@ Bluetooth update (0.5.0, 2026-11-15)
 - The bridge automatically prefers USB while its audio output is available,
   otherwise uses Bluetooth; no system driver or administrator helper is needed.
 - No physical Intel Mac or DualSense Edge was available for validation.
+
+Hollow Knight support (v1.1, 2026-11-15)
+
+- Shared plugin compiled against both games' installed macOS assemblies.
+- Original Hollow Knight's updated Unity 6 build contains 35 PS5 waveform
+  AudioClips in resources.assets/resources.resource; all extracted locally.
+- Validated all 35 Hollow Knight clips: 48 kHz PCM16, 18 mono / 17 stereo.
+- Regression extraction validated all 314 Silksong clips with the shared tool.
+- Hollow Knight loaded the plugin, launched its companion, and connected on
+  its separate default port 48112; Silksong keeps port 48111 and its config.
+- Live gameplay selected landing, dash, shade-dash, wings, nail-impact, and
+  wall-slide waveforms. The user reported haptics over USB and confirmed
+  Bluetooth gameplay after the controller discovery fix.
+- USB removal initially left the running IOHID manager with a stale device
+  set. Renewing discovery while no Bluetooth writer owns a device restored
+  wireless discovery and output without restarting the game.
+- Direct launches need Steam's app identity: the Hollow Knight launcher now
+  passes SteamAppId/SteamGameId 367520 and uses Rosetta on Apple Silicon
+  with BepInEx 5. Steam must be running for the Steam game build.
+- The installer rejects changes while the selected game is running.
+- Bluetooth packet/CRC/filter tests and both architecture routing self-tests
+  pass. Physical Intel Macs and DualSense Edge remain untested.

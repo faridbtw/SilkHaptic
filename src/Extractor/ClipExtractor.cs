@@ -15,13 +15,16 @@ namespace HapticsBridge
     /// (vibrationstatic_assets_vibrationdataps5.bundle) to 48 kHz PCM16 WAVs.
     /// Chain: Unity bundle -> AudioClip resource bytes -> FSB5 -> Vorbis -> PCM.
     /// </summary>
-    internal static class ClipExtractor
+    internal static partial class ClipExtractor
     {
         private const string BundleRelPath =
             "Hollow Knight Silksong.app/Contents/Resources/Data/StreamingAssets/aa/StandaloneOSX/vibrationstatic_assets_vibrationdataps5.bundle";
 
         public static int ExtractAll(string gameRoot, string outDir, Action<int, int> progress)
         {
+            string hollowKnightData = Path.Combine(gameRoot, "hollow_knight.app/Contents/Resources/Data");
+            if (File.Exists(Path.Combine(hollowKnightData, "resources.assets")))
+                return ExtractHollowKnight(hollowKnightData, outDir, progress);
             string bundlePath = Path.Combine(gameRoot, BundleRelPath);
             if (!File.Exists(bundlePath))
                 throw new FileNotFoundException("PS5 vibration bundle not found", bundlePath);
