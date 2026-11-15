@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
 <title id="title">SilkHaptic — Feel every thread</title>
-<desc id="desc">The original SilkHaptic layout in cream and red, with flowing lines and Sony’s official Volcanic Red DualSense product image. USB and Bluetooth haptics for Silksong on macOS.</desc>
+<desc id="desc">The original SilkHaptic layout in cream and red, with flowing lines and Sony’s official white DualSense product image. USB and Bluetooth haptics for Silksong on macOS.</desc>
 <defs>
  <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#171115"/><stop offset="1" stop-color="#2d171d"/></linearGradient>
  <radialGradient id="glow"><stop stop-color="#e24b4b" stop-opacity=".15"/><stop offset="1" stop-color="#e24b4b" stop-opacity="0"/></radialGradient>
@@ -26,6 +26,6 @@
   <text x="182" y="21" text-anchor="middle" fill="#f2cfce" font-size="12" letter-spacing="1">BLUETOOTH</text>
  </g>
 </g>
-<image href="dualsense-volcanic-red-cutout.png" x="600" y="-24" width="800" height="450" preserveAspectRatio="xMidYMid meet"/>
+<image href="dualsense-white.png" x="662" y="9" width="675" height="380" preserveAspectRatio="xMidYMid meet"/>
 <path d="M77 373 H1203" stroke="#f5cecc" stroke-opacity=".08"/>
 </svg>
