@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/silkhaptic-hollow-knight-silksong-banner.png" alt="SilkHaptic — Feel every thread. White DualSense controller, USB-C and Bluetooth haptics for Hollow Knight and Silksong on macOS." width="100%">
+  <img src="assets/silkhaptic-knight-hornet-banner.png" alt="SilkHaptic — Feel every thread. The Knight, Hornet, and a white DualSense controller. USB-C and Bluetooth haptics for Hollow Knight and Silksong on macOS." width="100%">
 </p>
 
 SilkHaptic uses the haptic effects already included in your copy of **Hollow Knight** and **Hollow Knight: Silksong**. Instead of feeling the same basic buzz for everything, you can feel the different textures of movement and action through a DualSense controller.
