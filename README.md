@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/silkhaptic-banner.svg?v=2" alt="SilkHaptic. DualSense haptics for Silksong on macOS. USB-C and Bluetooth." width="100%">
+  <img src="assets/silkhaptic-banner.png?v=3" alt="SilkHaptic — Feel every thread. Red DualSense controller, USB-C and Bluetooth haptics for macOS." width="100%">
 </p>
 
 <p align="center">
@@ -111,6 +111,6 @@ SilkHaptic prepares all **314 haptic clips** from your own game installation. No
 
 Based on **countlessbats’ Silk-Soft Touch / Silksong PS5 Haptics**, using the [MIT-licensed source preserved by alexkiri](https://github.com/alexkiri/SilksongHaptics) at commit `5312eab`. The macOS port and Bluetooth backend are maintained by [faridbtw](https://github.com/faridbtw).
 
-[MIT license](LICENSE) · [Third-party notices](ThirdParty)
+[MIT license](LICENSE) · [Third-party notices](ThirdParty) · [Banner image credits](assets/README.md)
 
 Silksong and its game assets belong to Team Cherry. DualSense is a Sony trademark. SilkHaptic is a community project.
