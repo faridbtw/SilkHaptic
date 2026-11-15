@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/silkhaptic-banner.svg" alt="SilkHaptic — Feel every thread. USB-C and Bluetooth haptics for Silksong on macOS." width="100%">
+  <img src="assets/silkhaptic-banner.svg?v=2" alt="SilkHaptic. DualSense haptics for Silksong on macOS. USB-C and Bluetooth." width="100%">
 </p>
 
 <p align="center">
