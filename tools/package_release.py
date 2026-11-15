@@ -34,7 +34,7 @@ for file in files:
         raise SystemExit(f'Unexpected assembly: {file}')
 releases = ROOT / 'releases'
 releases.mkdir(exist_ok=True)
-archive = releases / 'SilkHaptic-macOS-v0.5.0.zip'
+archive = releases / 'SilkHaptic-macOS-v1.0.zip'
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as z:
     for file in files:
         z.write(file, Path('SilkHaptic-macOS') / file.relative_to(DIST))

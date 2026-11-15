@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace SilksongPS5Haptics
 {
-    [BepInPlugin("com.will.silksong.ps5haptics", "SilkHaptic", "0.5.0")]
+    [BepInPlugin("com.will.silksong.ps5haptics", "SilkHaptic", "1.0.0")]
     public class PS5HapticsPlugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
