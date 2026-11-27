@@ -51,6 +51,7 @@ BepInEx/config/com.will.silksong.ps5haptics.cfg
 
 | Setting | Default | What it does |
 | :--- | :--- | :--- |
+| `AdaptiveLightbar` | `true` | Changes the DualSense light bar with game state and health in both games. |
 | `MasterGain` | `1.0` | Haptic intensity, from `0` to `2`. |
 | `KeepRumble` | `false` | Adds ordinary rumble alongside the PS5 effect. This can feel doubled. |
 | `AutoStartBridge` | `true` | Starts the haptic companion with the game. |
@@ -121,7 +122,7 @@ To build both game plugins, pass both installation folders, or keep Hollow Knigh
 
 The packager expects both compiled plugins for the combined release.
 
-The build also checks `tools/dotnet/dotnet` as a fallback. Compiled files go into `dist/`; the installable ZIP and SHA-256 checksum go into `releases/`. The release includes self-contained extractors for Apple Silicon and Intel, so players do not need .NET installed.
+The build also checks `tools/dotnet/dotnet` as a fallback. Compiled files go into `dist/`; the installable ZIP goes into `releases/`. The release includes self-contained extractors for Apple Silicon and Intel, so players do not need .NET installed.
 
 ## Verification
 

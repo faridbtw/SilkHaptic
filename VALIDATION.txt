@@ -60,3 +60,11 @@ Hollow Knight support (v1.1, 2026-11-15)
 - Final live switch test: Bluetooth -> USB -> Bluetooth reconnected without
   restarting Hollow Knight; nonzero wireless output resumed and the user
   confirmed haptics returned after switching.
+
+Adaptive DualSense light bar (v1.2.0, 2026-11-28)
+
+- Both games built from the same source and ran with the shared native bridge.
+- DualSense light bar output initialized over USB in both games on Apple Silicon.
+- Hollow Knight reads Lifeblood masks along with regular health.
+- Bluetooth RGB and setup reports passed flag, byte layout, and CRC checks.
+- Live Bluetooth lighting and light bar behavior on DualSense Edge remain unverified.

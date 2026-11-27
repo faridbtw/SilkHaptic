@@ -21,7 +21,7 @@ Tested in gameplay on an Apple Silicon Mac with a standard DualSense, using both
 
 ### 1. Download and install
 
-Download **[SilkHaptic-macOS-v1.1.zip](https://github.com/faridbtw/SilkHaptic/releases/download/v1.1/SilkHaptic-macOS-v1.1.zip)** from the release page and unzip it.
+Download **[SilkHaptic-macOS-v1.2.0.zip](https://github.com/faridbtw/SilkHaptic/releases/download/v1.2.0/SilkHaptic-macOS-v1.2.0.zip)** from the release page and unzip it.
 
 Quit the game, then choose its installer inside the extracted folder:
 
@@ -47,7 +47,9 @@ The installer finds the usual Steam installation and prepares that game’s hapt
 
 Open the launch command for your game from the table above, or launch through Steam **if you’ve already configured Steam to load BepInEx**. The Hollow Knight launcher uses Rosetta on Apple Silicon for BepInEx 5 compatibility; keep Steam running.
 
-That’s it. The haptic companion opens automatically. Keep your usual speakers or headphones selected for game audio.
+The haptic companion opens automatically. Keep your usual speakers or headphones selected for game audio.
+
+In both games, the DualSense light bar glows purple in menus, warm white at full health, amber as health drops, and red at one mask. It flashes red when you take damage. Hollow Knight also counts Lifeblood masks. Set `AdaptiveLightbar` to `false` in the [SilkHaptic settings](docs/ADVANCED.md#settings) if you prefer to turn this off.
 
 ## Update or remove
 

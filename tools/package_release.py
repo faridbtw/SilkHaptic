@@ -2,6 +2,7 @@
 """Package compiled SilkHaptic without game assets, dependencies, or local logs."""
 from pathlib import Path
 import hashlib
+import re
 import shutil
 import zipfile
 
@@ -38,13 +39,16 @@ for file in files:
         raise SystemExit(f'Unexpected assembly: {file}')
 releases = ROOT / 'releases'
 releases.mkdir(exist_ok=True)
-archive = releases / 'SilkHaptic-macOS-v1.1.zip'
+plugin_source = (ROOT / 'src/Plugin/Plugin.cs').read_text()
+version = re.search(r'public const string Version = "([0-9]+\.[0-9]+\.[0-9]+)";', plugin_source)
+if not version:
+    raise SystemExit('Could not find the version in src/Plugin/Plugin.cs.')
+archive = releases / f'SilkHaptic-macOS-v{version[1]}.zip'
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as z:
     for file in files:
         z.write(file, Path('SilkHaptic-macOS') / file.relative_to(DIST))
 with zipfile.ZipFile(archive) as z:
     assert z.testzip() is None
 checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
-archive.with_suffix('.zip.sha256').write_text(f'{checksum}  {archive.name}\n')
 print(archive)
 print(f'SHA256: {checksum}')
