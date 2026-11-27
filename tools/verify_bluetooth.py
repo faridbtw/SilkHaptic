@@ -18,6 +18,7 @@ with tempfile.TemporaryDirectory() as directory:
     lib.btEncodePcm.argtypes = [c.POINTER(byte),c.c_bool,byte,byte,c.POINTER(c.c_int8)]
     lib.btEncodePcm.restype = c.c_size_t
     lib.btEncodeControl.argtypes = [c.POINTER(byte),byte,c.c_bool]
+    lib.btEncodeLightbar.argtypes = [c.POINTER(byte),byte,c.c_uint32,c.c_bool]
     lib.btFilterInit.argtypes = [c.POINTER(Filter)]
     lib.btResample.argtypes = [c.POINTER(Filter),c.POINTER(c.c_float),c.c_size_t,c.POINTER(c.c_int8)]
     lib.btResample.restype = c.c_size_t
@@ -41,6 +42,18 @@ with tempfile.TemporaryDirectory() as directory:
         assert bytes(packet[:3]) == b'\x31\xf0\x10'
         assert packet[3] & 3 == (0 if enabled else 3)
         crc_valid(bytes(packet))
+    for setup in (False, True):
+        packet = (byte*78)()
+        lib.btEncodeLightbar(packet, 18, 0xFFCC98, setup)
+        expected = bytearray(74)
+        expected[:3] = b'\x31\x20\x10'
+        if setup:
+            expected[41] = expected[44] = 0x02
+        else:
+            expected[4] = 0x04
+            expected[47:50] = b'\xff\xcc\x98'
+        assert bytes(packet[:-4]) == expected
+        crc_valid(bytes(packet))
     def resample(frequency, right=False):
         frames = 48000
         state = Filter(); lib.btFilterInit(c.byref(state))
@@ -60,4 +73,4 @@ with tempfile.TemporaryDirectory() as directory:
         incoming = (c.c_float*(2*n))(); outgoing = (c.c_int8*(2*(n//16+1)))()
         produced += lib.btResample(c.byref(state),incoming,n,outgoing)
     assert produced == sum((7,9,1,15,17,31,192))//16
-    print('PASS: Bluetooth headers, sequence/counter wrap, independent CRC, stereo separation, 48k->3k rate, anti-aliasing, fragmented resampling.')
+    print('PASS: Bluetooth headers, light bar isolation, sequence/counter wrap, independent CRC, stereo separation, 48k->3k rate, anti-aliasing, fragmented resampling.')

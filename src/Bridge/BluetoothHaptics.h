@@ -17,5 +17,6 @@ void btFilterInit(BtResampler *filter);
 size_t btResample(BtResampler *filter, const float *input, size_t frames, int8_t *output);
 size_t btEncodePcm(uint8_t *packet, bool first, uint8_t sequence, uint8_t counter, const int8_t samples[128]);
 void btEncodeControl(uint8_t packet[78], uint8_t sequence, bool enable);
+void btEncodeLightbar(uint8_t packet[78], uint8_t sequence, uint32_t rgb, bool setup);
 uint32_t btChecksum(const uint8_t *packet, size_t bytes);
 #endif

@@ -37,6 +37,7 @@ namespace SilksongPS5Haptics
         public static volatile bool CachedMixerPaused;
 
         public static volatile bool Connected;
+        internal static volatile int LightbarColor = -1;
 
         private static readonly List<PS5HapticEmission> active = new List<PS5HapticEmission>();
         private static readonly object mixLock = new object();
@@ -159,6 +160,12 @@ namespace SilksongPS5Haptics
             var block = new float[BlockFrames * 2];
             var bytes = new byte[BlockBytes];
             var toRemove = new List<PS5HapticEmission>();
+            // A fixed-size control block keeps PCM framing and pacing unchanged.
+            var lightbarBlock = new byte[BlockBytes];
+            lightbarBlock[2] = 0xC0;
+            lightbarBlock[3] = 0x7F;
+            lightbarBlock[6] = 0xC0;
+            lightbarBlock[7] = 0x7F;
 
             while (!shutdown)
             {
@@ -176,8 +183,19 @@ namespace SilksongPS5Haptics
                     var clock = Stopwatch.StartNew();
                     long blocksSent = 0;
 
+                    int sentColor = -1;
                     while (!shutdown)
                     {
+                        int color = LightbarColor;
+                        if (color != sentColor)
+                        {
+                            lightbarBlock[0] = (byte)(color >> 16);
+                            lightbarBlock[1] = color < 0 ? (byte)0x4D : (byte)0x4C;
+                            lightbarBlock[4] = (byte)(color >> 8);
+                            lightbarBlock[5] = (byte)color;
+                            stream.Write(lightbarBlock, 0, BlockBytes);
+                            sentColor = color;
+                        }
                         MixBlock(block, toRemove);
                         Buffer.BlockCopy(block, 0, bytes, 0, BlockBytes);
                         stream.Write(bytes, 0, BlockBytes);

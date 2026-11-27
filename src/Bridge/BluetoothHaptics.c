@@ -26,6 +26,18 @@ void btEncodeControl(uint8_t packet[78], uint8_t sequence, bool enable) {
     }
     finishPacket(packet, 78);
 }
+void btEncodeLightbar(uint8_t packet[78], uint8_t sequence, uint32_t rgb, bool setup) {
+    memset(packet, 0, 78);
+    packet[0] = 0x31; packet[1] = (sequence & 15) * 16; packet[2] = 0x10;
+    if (setup) {
+        packet[41] = 0x02; /* enable lightbar setup */
+        packet[44] = 0x02; /* end the firmware's startup animation */
+    } else {
+        packet[4] = 0x04; /* RGB lightbar update only */
+        packet[47] = rgb >> 16; packet[48] = rgb >> 8; packet[49] = rgb;
+    }
+    finishPacket(packet, 78);
+}
 size_t btEncodePcm(uint8_t *packet, bool first, uint8_t sequence, uint8_t counter, const int8_t samples[128]) {
     const size_t length = first ? 206 : 142, offset = first ? 13 : 9;
     memset(packet, 0, length);

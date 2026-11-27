@@ -24,12 +24,16 @@
 
 #define RATE 48000
 #define CAPACITY 8192
+#define LIGHTBAR_INACTIVE UINT32_MAX
+#define LIGHTBAR_IDLE_BLUE 0x0020ffu
 #define MAX_QUEUE 1920 /* discard backlog above 40ms, keep fresh haptics */
 static float ring[CAPACITY][2];
 static size_t head, count;
 static pthread_mutex_t ringMutex = PTHREAD_MUTEX_INITIALIZER;
 static atomic_bool running = true, outputReady = false;
 static atomic_int peer = -1;
+static atomic_uint lightbarColor = LIGHTBAR_INACTIVE;
+static uint32_t usbLightbar = LIGHTBAR_INACTIVE;
 static volatile sig_atomic_t interrupted;
 static unsigned long long rendered, underruns, received, dropped;
 static uint64_t bluetoothMaxWriteNs, bluetoothReports;
@@ -44,6 +48,7 @@ static bool bluetoothThreadCreated;
 static atomic_bool bluetoothRunning, bluetoothFailed;
 static const char *transportPreference = "auto";
 static void closeBluetooth(void);
+static bool sendUsbOutput(bool audio, uint32_t lightbar);
 
 static void logline(const char *s) {
     fprintf(stderr, "%s\n", s);
@@ -164,6 +169,9 @@ static void closeAudio(void) {
     atomic_store(&outputReady, false);
     int p = atomic_load(&peer); if (p >= 0) shutdown(p, SHUT_RDWR);
     if (output) { AudioOutputUnitStop(output); AudioUnitUninitialize(output); AudioComponentInstanceDispose(output); output = NULL; }
+    if (currentDevice && usbLightbar != LIGHTBAR_INACTIVE)
+        sendUsbOutput(false, LIGHTBAR_IDLE_BLUE);
+    usbLightbar = LIGHTBAR_INACTIVE;
     currentDevice = 0; clearRing();
 }
 static long hidNumber(IOHIDDeviceRef dev, CFStringRef key) {
@@ -193,28 +201,41 @@ static void resetHidManager(void) {
     IOHIDManagerClose(hidManager, kIOHIDOptionsTypeNone);
     CFRelease(hidManager); hidManager = NULL;
 }
-static void enableHaptics(void) {
+static bool sendUsbOutput(bool audio, uint32_t lightbar) {
     ensureHidManager();
-    CFSetRef devices = IOHIDManagerCopyDevices(hidManager); if (!devices) return;
+    CFSetRef devices = IOHIDManagerCopyDevices(hidManager); if (!devices) return false;
     CFIndex n = CFSetGetCount(devices); IOHIDDeviceRef *values = calloc(n, sizeof(*values));
-    if (!values) { CFRelease(devices); return; }
+    if (!values) { CFRelease(devices); return false; }
+    bool sent = false;
     CFSetGetValues(devices, (const void **)values);
     for (CFIndex i = 0; i < n; i++) {
         IOHIDDeviceRef dev = values[i]; long pid = hidNumber(dev, CFSTR(kIOHIDProductIDKey));
         if (hidNumber(dev, CFSTR(kIOHIDVendorIDKey)) != 0x054c || (pid != 0x0ce6 && pid != 0x0df2)) continue;
         CFTypeRef transport = IOHIDDeviceGetProperty(dev, CFSTR(kIOHIDTransportKey));
         if (!transport || CFGetTypeID(transport) != CFStringGetTypeID() || CFStringCompare(transport, CFSTR("USB"), 0) != kCFCompareEqualTo) continue;
-        uint8_t report[48] = { 0x02, 0xb0, 0x80, 0, 0, 0x7f, 0xff, 0, 0 };
+        uint8_t report[48] = { 0x02 };
+        if (audio) {
+            report[1] = 0xb0; report[2] = 0x80;
+            report[5] = 0x7f; report[6] = 0xff;
+        }
+        if (lightbar != LIGHTBAR_INACTIVE) {
+            report[2] |= 0x04;
+            report[45] = lightbar >> 16; report[46] = lightbar >> 8; report[47] = lightbar;
+        }
         IOReturn status = IOHIDDeviceOpen(dev, kIOHIDOptionsTypeNone);
         if (status == kIOReturnSuccess) {
             status = IOHIDDeviceSetReport(dev, kIOHIDReportTypeOutput, 0x02, report, sizeof(report));
             IOHIDDeviceClose(dev, kIOHIDOptionsTypeNone);
         }
+        if (status == kIOReturnSuccess) sent = true;
         static IOReturn previous = -1;
-        if (status != previous) { char s[128]; snprintf(s, sizeof(s), "HID audio enable: 0x%x%s", status,
-            status == kIOReturnSuccess ? " (success)" : " (check controller access / Steam Input)"); logline(s); previous = status; }
+        if (audio && status != previous) {
+            char msg[128]; snprintf(msg, sizeof(msg), "HID audio enable: 0x%x%s", status,
+                status == kIOReturnSuccess ? " (success)" : " (check controller access / Steam Input)");
+            logline(msg); previous = status;
+        }
     }
-    free(values); CFRelease(devices);
+    free(values); CFRelease(devices); return sent;
 }
 static IOHIDDeviceRef findBluetooth(int list) {
     ensureHidManager();
@@ -256,6 +277,9 @@ static void *bluetoothWriter(void *unused) {
     uint64_t packetNumber = 0, ticks = 0, nonzeroSamples = 0;
     bool streaming = false; unsigned silentPackets = 0;
     uint8_t packet[206];
+    bool lightbarSetup = false;
+    uint32_t appliedLightbar = LIGHTBAR_INACTIVE;
+    uint64_t nextLightbarAttempt = 0;
     mach_timebase_info_data_t tb; mach_timebase_info(&tb);
     double ticksPerSecond = 1e9 * tb.denom / tb.numer;
     uint64_t start = mach_absolute_time() + (uint64_t)(0.030 * ticksPerSecond);
@@ -306,6 +330,27 @@ static void *bluetoothWriter(void *unused) {
                 if (!sendBluetooth(packet, 78)) goto failed;
             }
         }
+        uint32_t desiredLightbar = atomic_load(&lightbarColor);
+        if (desiredLightbar != appliedLightbar && ticks >= nextLightbarAttempt) {
+            nextLightbarAttempt = ticks + 2;
+            if (!lightbarSetup) {
+                btEncodeLightbar(packet, sequence++, 0, true);
+                lightbarSetup = sendBluetooth(packet, 78);
+            }
+            if (lightbarSetup) {
+                uint32_t rgb = desiredLightbar == LIGHTBAR_INACTIVE ? LIGHTBAR_IDLE_BLUE : desiredLightbar;
+                btEncodeLightbar(packet, sequence++, rgb, false);
+                if (sendBluetooth(packet, 78)) {
+                    if (appliedLightbar == LIGHTBAR_INACTIVE)
+                        logline("Bluetooth: adaptive light bar active.");
+                    appliedLightbar = desiredLightbar;
+                } else {
+                    nextLightbarAttempt = ticks + 47;
+                }
+            } else {
+                nextLightbarAttempt = ticks + 47;
+            }
+        }
         if (ticks % 470 == 0) {
             pthread_mutex_lock(&ringMutex); unsigned long long lost = dropped; pthread_mutex_unlock(&ringMutex);
             char msg[240]; snprintf(msg, sizeof(msg), "Bluetooth stream: %llu packets; %llu nonzero samples; %llu queued frames dropped; max HID write %.1f ms",
@@ -321,6 +366,10 @@ static void *bluetoothWriter(void *unused) {
         sendBluetooth(packet, length);
         usleep(30000);
         btEncodeControl(packet, sequence++, false); sendBluetooth(packet, 78);
+    }
+    if (appliedLightbar != LIGHTBAR_INACTIVE) {
+        btEncodeLightbar(packet, sequence++, LIGHTBAR_IDLE_BLUE, false);
+        sendBluetooth(packet, 78);
     }
     return NULL;
 failed:
@@ -358,7 +407,7 @@ static void refreshOutput(void) {
     AudioDeviceID usb = strcmp(transportPreference, "bluetooth") == 0 ? 0 : findDevice(0);
     if (usb) {
         if (usb != currentDevice || bluetoothDevice) {
-            closeAudio(); resetHidManager(); enableHaptics(); openAudio(usb);
+            closeAudio(); resetHidManager(); sendUsbOutput(true, LIGHTBAR_INACTIVE); openAudio(usb);
         }
         return;
     }
@@ -374,6 +423,15 @@ static void refreshOutput(void) {
         bt = strcmp(transportPreference, "usb") == 0 ? NULL : findBluetooth(0);
     }
     if (bt) { if (!bluetoothDevice) openBluetooth(bt); CFRelease(bt); }
+}
+static bool readLightbarControl(const uint8_t *block) {
+    /* Two quiet NaNs form the header. Valid PCM cannot contain this marker. */
+    if ((block[1] != 0x4c && block[1] != 0x4d) || block[2] != 0xc0 ||
+        block[3] != 0x7f || block[6] != 0xc0 || block[7] != 0x7f)
+        return false;
+    uint32_t rgb = ((uint32_t)block[0] << 16) | ((uint32_t)block[4] << 8) | block[5];
+    atomic_store(&lightbarColor, block[1] == 0x4d ? LIGHTBAR_INACTIVE : rgb);
+    return true;
 }
 static void *server(void *unused) {
     (void)unused;
@@ -410,8 +468,15 @@ static void *server(void *unused) {
             ssize_t n = recv(fd, block + used, sizeof(block) - used, 0);
             if (n <= 0) break;
             used += n;
-            if (used == sizeof(block)) { float aligned[960]; memcpy(aligned, block, sizeof(block)); enqueue(aligned, 480); received += 480; used = 0; }
+            if (used == sizeof(block)) {
+                if (!readLightbarControl(block)) {
+                    float aligned[960]; memcpy(aligned, block, sizeof(block));
+                    enqueue(aligned, 480); received += 480;
+                }
+                used = 0;
+            }
         }
+        atomic_store(&lightbarColor, LIGHTBAR_INACTIVE);
         atomic_store(&peer, -1); close(fd); clearRing(); logline("Game disconnected; waiting.");
     }
     if (listener >= 0) close(listener); return NULL;
@@ -473,12 +538,25 @@ int main(int argc, char **argv) {
     unsigned ticks = 0;
     while (!interrupted && atomic_load(&running)) {
         if (parentPid > 1 && kill(parentPid, 0) != 0 && errno == ESRCH) break;
-        if (ticks++ % 10 == 0) {
+        bool refresh = ticks++ % 20 == 0;
+        if (refresh) {
             CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.001, true);
             refreshOutput();
-            if (currentDevice) enableHaptics();
         }
-        usleep(100000);
+        if (currentDevice) {
+            uint32_t desired = atomic_load(&lightbarColor);
+            if (desired != usbLightbar) {
+                uint32_t rgb = desired == LIGHTBAR_INACTIVE ? LIGHTBAR_IDLE_BLUE : desired;
+                if (sendUsbOutput(refresh, rgb)) {
+                    if (usbLightbar == LIGHTBAR_INACTIVE)
+                        logline("USB: adaptive light bar active.");
+                    usbLightbar = desired;
+                }
+            } else if (refresh) {
+                sendUsbOutput(true, desired);
+            }
+        }
+        usleep(50000);
     }
     atomic_store(&running, false); closeAudio(); pthread_join(network, NULL);
     if (hidManager) { IOHIDManagerUnscheduleFromRunLoop(hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode); IOHIDManagerClose(hidManager, 0); CFRelease(hidManager); }

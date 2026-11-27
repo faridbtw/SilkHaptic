@@ -28,7 +28,21 @@ root helper, virtual controller, or system audio device is installed.
 The sender does not transmit all-zero idle audio. A nonzero sample begins a
 fresh haptic session, which includes a ~150 ms silent tail before restoring
 ordinary rumble mode. During sustained haptics, audio mode is reasserted about
-once per second. This keeps silent periods free of wireless output traffic
-and leaves more of the Bluetooth link budget to the game's controller input
-and output. Under a scheduling/radio stall, only the oldest queued samples
-are dropped; the newest samples are retained.
+once per second. During idle periods, only light bar changes can generate a
+report. This leaves more of the Bluetooth link budget to the game's controller
+input and output. Under a scheduling or radio stall, the oldest queued samples
+are dropped so playback resumes with the newest samples.
+
+## Light bar
+
+Both game plugins send a fixed-size control block alongside their 480-frame
+PCM blocks when the desired color changes. The first eight bytes are
+`R 4C C0 7F G B C0 7F`, with the RGB channels as bytes and the rest of
+the block zeroed. The two words are quiet NaNs, outside the valid PCM range.
+The bridge consumes the control block without queuing audio. A `4D` tag
+returns the light bar to blue and ends color updates.
+
+USB writes set only the light bar valid bit for a color change. Bluetooth uses
+the same sequence counter and CRC as the haptics writer, with the light bar
+setup sent on first use. The RGB offsets and valid bits follow the
+[Linux PlayStation HID driver](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-playstation.c).

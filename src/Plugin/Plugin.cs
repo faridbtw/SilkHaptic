@@ -10,7 +10,7 @@ namespace SilksongPS5Haptics
 {
     internal static class GameSupport
     {
-        public const string Version = "1.1.0";
+        public const string Version = "1.2.0";
 #if HOLLOW_KNIGHT
         public const string Id = "com.faridbtw.hollowknight.haptics";
         public const string Name = "SilkHaptic (Hollow Knight)";
@@ -32,6 +32,10 @@ namespace SilksongPS5Haptics
         internal static ConfigEntry<string> ClipsPath;
         internal static ConfigEntry<bool> AutoStartBridge;
 
+        private ConfigEntry<bool> adaptiveLightbar;
+        private int previousHealth = -1;
+        private float damageFlashUntil;
+
         private void Awake()
         {
             Log = Logger;
@@ -47,6 +51,9 @@ namespace SilksongPS5Haptics
 
             AutoStartBridge = Config.Bind("General", "AutoStartBridge", true,
                 "Launch the native macOS HapticsBridge automatically when the game starts.");
+
+            adaptiveLightbar = Config.Bind("Lightbar", "AdaptiveLightbar", true,
+                "Change the DualSense light bar with the player's health and show a brief red flash on damage.");
 
             string clips = ClipsPath.Value;
             if (string.IsNullOrEmpty(clips))
@@ -70,11 +77,53 @@ namespace SilksongPS5Haptics
                 HapticEngine.CachedMasterGain = MasterGain.Value;
 
                 SuperviseBridge();
+                UpdateLightbar();
             }
             catch
             {
                 // ConfigManager may not be ready during early boot; keep last values.
             }
+        }
+
+        private void UpdateLightbar()
+        {
+            const int menuColor = 0x5024A0;
+            if (!adaptiveLightbar.Value)
+            {
+                previousHealth = -1;
+                damageFlashUntil = 0f;
+                HapticEngine.LightbarColor = -1;
+                return;
+            }
+
+            var manager = GameManager._instance;
+            if (manager == null || !manager.IsGameplayScene() || manager.playerData == null)
+            {
+                previousHealth = -1;
+                damageFlashUntil = 0f;
+                HapticEngine.LightbarColor = menuColor;
+                return;
+            }
+
+            var player = manager.playerData;
+            int health = player.health;
+#if HOLLOW_KNIGHT
+            // Lifeblood masks absorb damage before the Knight's regular masks.
+            health += Mathf.Max(0, player.healthBlue);
+#endif
+            float now = Time.unscaledTime;
+            if (previousHealth >= 0 && health < previousHealth)
+                damageFlashUntil = now + 0.25f;
+            previousHealth = health;
+
+            if (now < damageFlashUntil)
+                HapticEngine.LightbarColor = 0xFF0600;
+            else if (health <= 0)
+                HapticEngine.LightbarColor = 0x400000;
+            else if (health == 1)
+                HapticEngine.LightbarColor = 0xAD000C;
+            else
+                HapticEngine.LightbarColor = health >= player.maxHealth ? 0xFFCC98 : 0xE66605;
         }
 
         private float _nextBridgeCheck = 8f;   // initial grace: give the Awake launch time to open its listener
@@ -122,10 +171,17 @@ namespace SilksongPS5Haptics
             try
             {
                 if (bridgeProcess != null && !bridgeProcess.HasExited)
-                    bridgeProcess.Kill();
+                {
+                    // Let the native bridge restore the controller light and finish its audio tail.
+                    if (SignalProcess(bridgeProcess.Id, 15) != 0)
+                        bridgeProcess.Kill();
+                }
             }
             catch { }
         }
+
+        [System.Runtime.InteropServices.DllImport("/usr/lib/libSystem.B.dylib", EntryPoint = "kill")]
+        private static extern int SignalProcess(int processId, int signal);
 
         // The bridge is single-instance (mutex), so launching when one is
         // already running is a harmless no-op.
